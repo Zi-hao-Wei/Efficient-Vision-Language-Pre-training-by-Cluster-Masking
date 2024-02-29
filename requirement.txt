@@ -5,3 +5,6 @@ huggingface_hub
 sentencepiece
 protobuf
 timm==0.9.12
+torch
+torchvision
+wandb
