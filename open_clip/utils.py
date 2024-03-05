@@ -5,6 +5,20 @@ import torch
 from torch import nn as nn
 from torchvision.ops.misc import FrozenBatchNorm2d
 
+def patchify(imgs, p=16):
+    """
+    imgs: (N, 3, H, W)
+    x: (N, L, patch_size**2 *3)
+    """
+    h, w = imgs.shape[-2:]
+    assert imgs.shape[2] == imgs.shape[3] and imgs.shape[2] % p == 0
+    h = h // p
+    w = w // p
+    x = imgs.reshape(shape=(imgs.shape[0], 3, h, p, w, p))
+    x = torch.einsum('nchpwq->nhwpqc', x)
+    x = x.reshape(shape=(imgs.shape[0], h * w, p**2 * 3))
+    return x
+
 
 def freeze_batch_norm_2d(module, module_match={}, name=''):
     """

@@ -6,21 +6,7 @@ import torch
 from torch import nn
 from torch.nn import functional as F
 from torch.utils.checkpoint import checkpoint
-from .utils import to_2tuple
-
-def patchify(imgs):
-    """
-    imgs: (N, 3, H, W)
-    x: (N, L, patch_size**2 *3)
-    """
-    p = 16
-    assert imgs.shape[2] == imgs.shape[3] and imgs.shape[2] % p == 0
-    h = w = 224 // p
-    x = imgs.reshape(shape=(imgs.shape[0], 3, h, p, w, p))
-    x = torch.einsum('nchpwq->nhwpqc', x)
-    x = x.reshape(shape=(imgs.shape[0], h * w, p**2 * 3))
-    return x
-
+from .utils import to_2tuple, patchify
 
 class LayerNormFp32(nn.LayerNorm):
     """Subclass torch's LayerNorm to handle fp16 (by casting to float32 and back)."""
