@@ -69,8 +69,7 @@ def get_latest_checkpoint(path: str, remote : bool):
 
 def main(args):
     args = parse_args(args)
-    # args.lr = args.lr * args.batch_size/256
-    print(args.lr)
+    args.lr = args.lr * args.batch_size/256
     if torch.cuda.is_available():
         # This enables tf32 on Ampere GPUs which is only 8% slower than
         # float16 and almost as accurate as float32
@@ -170,8 +169,8 @@ def main(args):
     if is_master(args) and args.remote_sync is not None:
         # first make sure it works
         result = remote_sync(
-            os.path.join(args.logs, args.name), 
-            os.path.join(args.remote_sync, args.name), 
+            os.path.join(args.logs, args.name),
+            os.path.join(args.remote_sync, args.name),
             args.remote_sync_protocol
         )
         if result:
@@ -182,8 +181,8 @@ def main(args):
         # if all looks good, start a process to do this every args.remote_sync_frequency seconds
         remote_sync_process = start_sync_process(
             args.remote_sync_frequency,
-            os.path.join(args.logs, args.name), 
-            os.path.join(args.remote_sync, args.name), 
+            os.path.join(args.logs, args.name),
+            os.path.join(args.remote_sync, args.name),
             args.remote_sync_protocol
         )
         remote_sync_process.start()
@@ -235,7 +234,7 @@ def main(args):
     if args.distill:
         # FIXME: currenlty assumes the model your distilling from has the same tokenizer & transforms.
         dist_model, _, _ = create_model_and_transforms(
-            args.distill_model, 
+            args.distill_model,
             args.distill_pretrained,
             device=device,
             precision=args.precision,
@@ -333,7 +332,7 @@ def main(args):
             sd = checkpoint["state_dict"]
             if not args.distributed and next(iter(sd.items()))[0].startswith('module'):
                 sd = {k[len('module.'):]: v for k, v in sd.items()}
-            model.load_state_dict(sd,strict=False)
+            model.load_state_dict(sd)
             if optimizer is not None:
                 optimizer.load_state_dict(checkpoint["optimizer"])
             if scaler is not None and 'scaler' in checkpoint:
@@ -341,7 +340,7 @@ def main(args):
             logging.info(f"=> resuming checkpoint '{args.resume}' (epoch {start_epoch})")
         else:
             # loading a bare (model only) checkpoint for fine-tune or evaluation
-            model.load_state_dict(checkpoint,strict=False)
+            model.load_state_dict(checkpoint)
             logging.info(f"=> loaded checkpoint '{args.resume}' (epoch {start_epoch})")
 
     # initialize datasets
@@ -404,10 +403,15 @@ def main(args):
         # Evaluate.
         evaluate(model, data, start_epoch, args, writer)
         return
-
-    model.visual.target_mask_ratio = args.target_mask_ratio
-    model.visual.use_embed = args.use_embed
-    model.visual.min_mask_ratio = args.min_mask_ratio
+    
+    if args.distributed:
+        model.module.visual.target_mask_ratio = args.target_mask_ratio
+        model.module.visual.use_embed = args.use_embed
+        model.module.visual.min_mask_ratio = args.min_mask_ratio
+    else:
+        model.visual.target_mask_ratio = args.target_mask_ratio
+        model.visual.use_embed = args.use_embed
+        model.visual.min_mask_ratio = args.min_mask_ratio
 
     loss = create_loss(args)
 
@@ -418,8 +422,10 @@ def main(args):
         device = torch.device(args.device)
         input_dtype = get_input_dtype(args.precision)
         img = img.to(device=device, dtype=input_dtype, non_blocking=True)
-        args.sim = model.visual(img, epoch=0, search=True)
-        model.visual.sim = args.sim
+        if args.distributed:
+            model.module.visual.sim = args.sim
+        else:
+            model.visual.sim = args.sim
 
 
     for epoch in range(start_epoch, args.epochs):
@@ -470,8 +476,8 @@ def main(args):
         logging.info('Final remote sync.')
         remote_sync_process.terminate()
         result = remote_sync(
-            os.path.join(args.logs, args.name), 
-            os.path.join(args.remote_sync, args.name), 
+            os.path.join(args.logs, args.name),
+            os.path.join(args.remote_sync, args.name),
             args.remote_sync_protocol
         )
         if result:
