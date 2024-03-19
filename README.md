@@ -53,7 +53,7 @@ The representation learnt by our method is evaluated thoroughly through the [cli
 clip_benchmark eval --pretrained_model models.txt \
     --dataset "webdatasets.txt" \
     --task zeroshot_retrieval \
-    --recall_k [1,5,10] \
+    --recall_k 1 5 10 \
     --dataset_root "https://huggingface.co/datasets/clip-benchmark/wds_{dataset_cleaned}/tree/main" \
     --output "benchmark_{dataset}_{pretrained}_{model}_{language}_{task}.json"
 ```
