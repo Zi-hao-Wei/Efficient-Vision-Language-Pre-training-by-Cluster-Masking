@@ -98,7 +98,7 @@ Our code base is developed based on MAE and Open-clip's repository. We highly ap
 
 ```
 @inproceedings{clustermasking,
-  title={Masking Clustersin Vision-language Pretraining},
+  title={Efficient Vision-Language Pre-training by Cluster Masking},
   author={Wei, Zihao and Pan, Zixuan and Owens, Andrew},
   booktitle={Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition},
   year={2024}
