@@ -1,6 +1,6 @@
-# Masking Clusters in Vision-language Pretraining
+# Efficient Vision Language Pre-training by Cluster Masking 
 
-This is the official repository for "Masking Clusters in Vision-language Pretraining", presented at CVPR 2024.
+This is the official repository for "Efficient Vision-Language Pre-training by Cluster Masking", presented at CVPR 2024.
 
 ## Introduction
 
