@@ -1,5 +1,8 @@
 # Efficient Vision Language Pre-training by Cluster Masking 
 
+> [[Paper](https://arxiv.org/abs/2405.08815)]
+> [[Project Page](https://zxp46.github.io/cluster-masking/)]
+
 This is the official repository for "Efficient Vision-Language Pre-training by Cluster Masking", presented at CVPR 2024.
 
 ## Introduction
